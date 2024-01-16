@@ -1,20 +1,20 @@
-import firebase from "firebase/compat/app";
-import "firebase/compat/firestore";
-import { getAuth } from "firebase/auth";
-import { GoogleAuthProvider } from "firebase/auth";
-
+import { initializeApp } from "firebase/app";
+import { getFirestore, collection, getDocs } from "firebase/firestore";
+import { getAuth, GoogleAuthProvider } from "firebase/auth";
+import { getAnalytics } from "firebase/analytics";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyDkPOTCiQMLg761udBMfwMkoKDBuFk5Y5E",
-  authDomain: "slack-clone-214a0.firebaseapp.com",
-  projectId: "slack-clone-214a0",
-  storageBucket: "slack-clone-214a0.appspot.com",
-  messagingSenderId: "792363490591",
-  appId: "1:792363490591:web:126a7df33a1e02b3b9642a",
+  apiKey: "AIzaSyCPG5V8iD1Xx4_P_qg1SxfBaNhOGllzkNU",
+  authDomain: "slack-clone-e361d.firebaseapp.com",
+  projectId: "slack-clone-e361d",
+  storageBucket: "slack-clone-e361d.appspot.com",
+  messagingSenderId: "116935461933",
+  appId: "1:116935461933:web:d34300ad0eea2f00f67ca4",
+  measurementId: "G-JJEVF1QFE3",
 };
-const app = firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore(app);
-const auth = getAuth(app)
-const provider = new GoogleAuthProvider();
 
-export { provider, db, auth };
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+// const auth = getAuth();
+// const provider = new GoogleAuthProvider();
+export { db};

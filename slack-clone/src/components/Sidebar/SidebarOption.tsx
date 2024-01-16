@@ -1,26 +1,44 @@
-import React, { FC } from "react";
+import { FC } from "react";
 import { SidebarOptionProps } from "../../Types";
 import styled from "styled-components";
 import { db } from "../../firebase";
-import { addDoc } from "firebase/firestore";
-
+import { useCollection } from "react-firebase-hooks/firestore";
+import { addDoc, collection } from "firebase/firestore";
+import { useAppDispatch } from "../../hooks/reduxHook";
+import { etnerRoom } from "../../features/appSlice";
 const Sidebaroption: FC<SidebarOptionProps> = ({
   title,
   icon: Icon,
   addChannelOption,
+  id,
 }) => {
-  const addChanle = () => {
-    const channelName = prompt("Please enter the channle name");
-    if(channelName){
-      db.collection('rooms').add({
-        name: channelName
-      });
+  const dispatch = useAppDispatch();
+  const addChannel = async () => {
+    const channelName = prompt("Please enter the channel name");
+    if (channelName) {
+      try {
+        const docRef = await addDoc(collection(db, "rooms"), {
+          name: channelName,
+        });
+        console.log(`Channel added with ID: ${docRef.id}`);
+      } catch (error) {
+        console.error("Error adding channel: ", error);
+      }
     }
   };
-  const selectChannel = () => {};
+
+  const selectChannel = () => {
+    if (id) {
+      dispatch(
+        etnerRoom({
+          roomId: id,
+        })
+      );
+    }
+  };
   return (
     <SidebarOptionContainer
-      onClick={() => (addChannelOption ? addChanle : selectChannel)}
+      onClick={addChannelOption == true ? addChannel : selectChannel}
     >
       {Icon && <Icon fontSize="small" style={{ padding: 10 }} />}
       {Icon ? (
@@ -52,4 +70,7 @@ const SidebarOptionContainer = styled.div`
     padding: 15px;
   }
 `;
-const SidebarOptionChannel = styled.div``;
+const SidebarOptionChannel = styled.h3`
+  padding: 10px;
+  font-weight: 300;
+`;

@@ -1,5 +1,6 @@
 export interface SidebarOptionProps {
   title: string;
-  icon: React.ElementType;
+  icon?: React.ElementType;
   addChannelOption?:boolean;
+  id?:string
 }
