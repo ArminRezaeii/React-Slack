@@ -2,7 +2,7 @@ import { FC } from "react";
 import { SidebarOptionProps } from "../../Types";
 import styled from "styled-components";
 import { db } from "../../firebase";
-import { useCollection } from "react-firebase-hooks/firestore";
+
 import { addDoc, collection } from "firebase/firestore";
 import { useAppDispatch } from "../../hooks/reduxHook";
 import { etnerRoom } from "../../features/appSlice";
@@ -26,7 +26,6 @@ const Sidebaroption: FC<SidebarOptionProps> = ({
       }
     }
   };
-
   const selectChannel = () => {
     if (id) {
       dispatch(

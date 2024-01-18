@@ -1,6 +1,5 @@
 import {
   Add,
-  AddIcCallOutlined,
   Apps,
   BookmarkBorder,
   Create,
@@ -10,7 +9,6 @@ import {
   FiberManualRecord,
   FileCopyOutlined,
   InboxOutlined,
-  InsertChart,
   InsertComment,
   PeopleAltOutlined,
 } from "@mui/icons-material";
@@ -18,23 +16,22 @@ import styled from "styled-components";
 import Sidebaroption from "./SidebarOption";
 import { useCollection } from "react-firebase-hooks/firestore";
 import { collection } from "firebase/firestore";
-import { db } from "../../firebase";
-import { useSelector } from "react-redux";
-import { useAppSelector } from "../../hooks/reduxHook";
+import { auth, db } from "../../firebase";
+import { useAuthState } from "react-firebase-hooks/auth";
 
 export default function Sidebar() {
   const channelsCollectionRef = collection(db, "rooms");
+  // @ts-ignore
+  const [user] = useAuthState(auth);
   const [channels, error, loading] = useCollection(channelsCollectionRef);
-const data=useAppSelector(state=>state.app.roomId)
-console.log(data)
   return (
     <SidebarContainer>
       <SidebarHeader>
         <SidebarInfo>
-          <h1>Armin</h1>
+          <h1>{user?.displayName}</h1>
           <h3>
             <FiberManualRecord />
-            panjab
+            Online
           </h3>
         </SidebarInfo>
         <Create />
@@ -52,7 +49,7 @@ console.log(data)
       <hr />
       <Sidebaroption title="Add Channel" icon={Add} addChannelOption />
       {channels?.docs.map((doc) => (
-        <Sidebaroption key={doc.id}  id={doc.id} title={doc.data().name} />
+        <Sidebaroption key={doc.id} id={doc.id} title={doc.data().name} />
       ))}
     </SidebarContainer>
   );
