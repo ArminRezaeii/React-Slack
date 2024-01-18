@@ -50,13 +50,16 @@ export default function Chat() {
 
           <ChatMessage ref={chatRef}>
             {roomMessage?.docs.map((doc) => {
-              const { message, timestamp, user, userImage } = doc.data();
+              const { message, timestamp, user, userImage, file } =
+                doc.data();
+           
               return (
                 <Message
                   message={message}
                   timestamp={timestamp}
                   user={user}
                   userImage={userImage}
+                 downloadURL={file?.downloadURL}
                   key={doc.id}
                 />
               );
@@ -70,7 +73,6 @@ export default function Chat() {
           />
         </>
       )}
-  
     </ChatContainer>
   );
 }

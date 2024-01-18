@@ -1,12 +1,28 @@
-import { AccessTime, HelpOutline, SearchOutlined } from "@mui/icons-material";
+import {
+  AccessTime,
+  Add,
+  Create,
+  FiberManualRecord,
+  SearchOutlined,
+} from "@mui/icons-material";
 import { Avatar } from "@mui/material";
 import { useAuthState } from "react-firebase-hooks/auth";
 import styled from "styled-components";
-import { auth } from "../../firebase";
-
+import { auth, db } from "../../firebase";
+import MenuIcon from "@mui/icons-material/Menu";
+import { useState } from "react";
+import Sidebaroption from "../Sidebar/SidebarOption";
+import { collection } from "firebase/firestore";
+import { useCollection } from "react-firebase-hooks/firestore";
 export default function Header() {
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const channelsCollectionRef = collection(db, "rooms");
+  // @ts-ignore
   const [user] = useAuthState(auth);
-  console.log(user);
+  const [channels, error, loading] = useCollection(channelsCollectionRef);
+  const toggleSidebar = () => {
+    setSidebarOpen(!sidebarOpen);
+  };
   return (
     <>
       <HeaderContainer>
@@ -16,16 +32,36 @@ export default function Header() {
             alt={user?.displayName ?? undefined}
             src={user?.photoURL ?? undefined}
           />
-          <AccessTime />
+          <AccessTime className="time" />
         </HeaderLeft>
         <HeaderSearch>
           <SearchOutlined />
           <input type="text" placeholder="Search" />
         </HeaderSearch>
         <HeaderRight>
-          <HelpOutline />
+          <MenuIcon onClick={toggleSidebar} className="menu" />
         </HeaderRight>
       </HeaderContainer>
+      {sidebarOpen && (
+         <MenuContainer>
+          <MenuHeader>
+            <SidebarInfo>
+              <h1>{user?.displayName}</h1>
+              <h3>
+                <FiberManualRecord />
+                Online
+              </h3>
+            </SidebarInfo>
+            <Create />
+          </MenuHeader>
+
+          <Sidebaroption title="Add Channel" icon={Add} addChannelOption />
+          {channels?.docs.map((doc) => (
+            <Sidebaroption key={doc.id} id={doc.id} title={doc.data().name} />
+          ))}
+        </MenuContainer>
+    
+      )}
     </>
   );
 }
@@ -36,54 +72,134 @@ const HeaderContainer = styled.div`
   align-items: center;
   padding: 10px 0;
   background-color: var(--slack-color);
+
   color: white;
 `;
+
 const HeaderLeft = styled.div`
   display: flex;
   align-items: center;
   flex: 0.3;
   margin-left: 20px;
+
+  @media screen and (max-width: 1024px) {
+    .time {
+      padding-left: 14px;
+    }
+  }
+
   > .MuiSvgIcon-root {
     margin-left: auto;
     margin-right: 30px;
-
     color: white;
   }
+
   .hello {
     color: red;
   }
 `;
+
 const HeaderAvatar = styled(Avatar)`
   cursor: pointer;
+
   :hover {
     opacity: 0.8;
   }
 `;
+
 const HeaderSearch = styled.div`
   flex: 0.4;
   display: flex;
-  opacity: 1;
   border-radius: 6px;
   background-color: #421f44;
-  text-align: center;
-  padding: 0 50px;
+  padding: 8px;
   color: gray;
-  border: 1px gray solid;
+  border: 1px solid gray;
+  align-items: center;
+
   > input {
+    flex: 1;
     background-color: transparent;
     text-align: center;
-    min-width: 30vw;
     outline: none;
     color: white;
     border: none;
   }
 `;
+
 const HeaderRight = styled.div`
   display: flex;
   flex: 0.3;
   align-items: flex-start;
+
+  .menu {
+    display: none;
+  }
+
+  @media screen and (max-width: 1024px) {
+    .menu {
+      display: flex;
+    }
+  }
+
   > .MuiSvgIcon-root {
     margin-left: auto;
     margin-right: 20px;
+  }
+`;
+
+const MenuContainer = styled.div`
+  background-color: var(--slack-color);
+  color: white;
+  border-top: 1px solid #49274b;
+  width: 100%;
+  padding: 10px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+
+  > hr {
+    margin: 10px 0;
+    border: 1px solid #49274b;
+  }
+`;
+
+const MenuHeader = styled.div`
+  display: flex;
+  border-bottom: 1px solid #49274b;
+  padding: 13px;
+  align-items: center;
+
+  > .MuiSvgIcon-root {
+    padding: 8px;
+    color: #49274b;
+    font-size: 18px;
+    background-color: white;
+    border-radius: 99px;
+  }
+`;
+
+const SidebarInfo = styled.div`
+  flex: 1;
+  height: 100%;
+
+  > h1 {
+    font-size: 18px;
+    font-weight: 900;
+    margin-bottom: 5px;
+  }
+
+  > h3 {
+    display: flex;
+    font-size: 13px;
+    font-weight: 400;
+    align-items: center;
+
+    > .MuiSvgIcon-root {
+      font-size: 14px;
+      margin-top: 1px;
+      margin-right: 2px;
+      color: green;
+    }
   }
 `;

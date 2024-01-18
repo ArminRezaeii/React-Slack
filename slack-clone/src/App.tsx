@@ -10,7 +10,6 @@ import Login from "./components/Loading/Login";
 function App() {
   const [user, loading] = useAuthState(auth);
 
-  
   return (
     <>
       <Router>
@@ -35,5 +34,6 @@ export default App;
 const AppBody = styled.div`
   display: flex;
   height: 100vh;
-`;
 
+ 
+`;

@@ -15,4 +15,5 @@ export interface MessageProps {
   timestamp: any;
   user: string;
   userImage: string;
+  downloadURL:string
 }
