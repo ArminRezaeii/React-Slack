@@ -4,9 +4,18 @@ import styled from "styled-components";
 import { auth, provider } from "../../firebase";
 
 export default function Login() {
-  const signIn = () => {
-
-    signInWithPopup(auth, provider).catch((error) => alert(error.message));
+  const signIn = async () => {
+    try {
+      await signInWithPopup(auth, provider);
+    } catch (error) {
+        // @ts-ignore
+      if (error.code === "auth/popup-closed-by-user") {
+        console.log("Popup closed by the user");
+      } else {
+          // @ts-ignore
+        alert(error.message);
+      }
+    }
   };
   return (
     <LoginContainer>

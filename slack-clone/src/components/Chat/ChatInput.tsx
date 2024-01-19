@@ -1,23 +1,25 @@
-import React, { FC, useEffect, useRef, useState } from "react";
+import React, { FC, useEffect, useState } from "react";
 import { ChatInputProps } from "../../Types";
 import styled from "styled-components";
-import { Alert, Button, Input, Snackbar } from "@mui/material";
+import { Alert, AlertColor, Button, Input, Snackbar } from "@mui/material";
 import { auth, db } from "../../firebase";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { addDoc, collection, serverTimestamp } from "firebase/firestore";
 import { AttachFileOutlined, Send } from "@mui/icons-material";
 import CloseIcon from "@mui/icons-material/Close";
-const ChatInput: FC<ChatInputProps> = ({ roomId, channelName, chatRef }) => {
+const ChatInput: FC<ChatInputProps> = ({ roomId, chatRef }) => {
   const [inputValue, setInputValue] = useState("");
   const [user] = useAuthState(auth);
-  const [file, setFile] = useState<string | null>();
+  const [file, setFile] = useState<string | unknown>();
   const [openAlert, setOpenAlert] = useState(false);
   const [alertMessage, setAlertMessage] = useState("");
-  const [alertSeverity, setAlertSeverity] = useState("error");
-  const [downloadImage, setDownloadImage] = useState("");
+  const [alertSeverity, setAlertSeverity] = useState<AlertColor>("error");
+
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    // @ts-ignore
     const selectedFile = e.target.files[0];
     const allowedFileTypes = ["image/png", "image/jpeg"];
     if (!allowedFileTypes.includes(selectedFile.type)) {
@@ -28,6 +30,14 @@ const ChatInput: FC<ChatInputProps> = ({ roomId, channelName, chatRef }) => {
       setOpenAlert(true);
       return;
     }
+    const maxSize = 3 * 1024 * 1024;
+    if (selectedFile.size > maxSize) {
+      setAlertSeverity("error");
+      setAlertMessage("File size exceeds the maximum allowed size (4MB).");
+      setOpenAlert(true);
+      return;
+    }
+
     if (selectedFile) {
       setFile(selectedFile);
       const reader = new FileReader();
@@ -48,7 +58,7 @@ const ChatInput: FC<ChatInputProps> = ({ roomId, channelName, chatRef }) => {
     }
     try {
       if (file) {
-        const maxSize = 4 * 1024 * 1024; // 4MB
+        const maxSize = 3 * 1024 * 1024; // 4MB
         // @ts-ignore
         if (file.size > maxSize) {
           setAlertSeverity("error");
@@ -70,6 +80,7 @@ const ChatInput: FC<ChatInputProps> = ({ roomId, channelName, chatRef }) => {
         const storage = getStorage();
         // @ts-ignore
         const storageRef = ref(storage, `roomFiles/${roomId}/${file.name}`);
+        // @ts-ignore
         await uploadBytes(storageRef, file);
 
         const downloadURL = await getDownloadURL(storageRef);
@@ -97,10 +108,6 @@ const ChatInput: FC<ChatInputProps> = ({ roomId, channelName, chatRef }) => {
           userImage: user?.photoURL,
         });
       }
-      setFile(null);
-      setInputValue("");
-      // @ts-ignore
-      setImagePreview(null);
       chatRef?.current?.scrollIntoView({ behavior: "smooth" });
     } catch (error) {
       console.error("Error sending message:", error);
@@ -111,6 +118,16 @@ const ChatInput: FC<ChatInputProps> = ({ roomId, channelName, chatRef }) => {
     <GameInputContainer>
       <div className="item">
         <input
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              sendMessage(e);
+              setFile(null);
+              setInputValue("");
+              setImagePreview(null);
+            }
+          }}
+          type="text"
           onChange={(e) => setInputValue(e.target.value)}
           value={inputValue}
           placeholder="Type your message..."
@@ -123,6 +140,7 @@ const ChatInput: FC<ChatInputProps> = ({ roomId, channelName, chatRef }) => {
         )}
         <CloudUploadButton>
           <Input
+            // @ts-ignore
             accept="image/*"
             style={{ display: "none" }}
             id="file-input"
@@ -132,6 +150,7 @@ const ChatInput: FC<ChatInputProps> = ({ roomId, channelName, chatRef }) => {
           />
           <label htmlFor="file-input">
             <Button
+              className="attach_button"
               variant="contained"
               component="span"
               startIcon={<AttachFileOutlined />}
@@ -143,12 +162,30 @@ const ChatInput: FC<ChatInputProps> = ({ roomId, channelName, chatRef }) => {
             variant="contained"
             color="primary"
             endIcon={<Send />}
-            onClick={sendMessage}
+            onClick={(e)=>{
+              sendMessage(e);
+              setFile(null);
+              setInputValue("");
+              setImagePreview(null);
+
+            }}
           >
             Send
           </Button>
         </SendButton>
       </div>
+      <Snackbar
+        open={openAlert}
+        autoHideDuration={6000}
+        onClose={() => setOpenAlert(false)}
+      >
+        <Alert
+          onClose={() => setOpenAlert(false)}
+          severity={alertSeverity as AlertColor}
+        >
+          {alertMessage}
+        </Alert>
+      </Snackbar>
     </GameInputContainer>
   );
 };
@@ -205,7 +242,13 @@ const CloudUploadButton = styled.div`
   label {
     cursor: pointer;
   }
-
+  .attach_button {
+    background-color: #49274b;
+  }
+  .attach_button:hover {
+    background-color: #49274b;
+    opacity: 0.9;
+  }
   > .MuiSvgIcon-root {
     font-size: 24px;
   }
@@ -217,8 +260,8 @@ const SendButton = styled.div`
     background-color: #49274b;
     color: #fff;
   }
-  >button:hover{
+  > button:hover {
     background-color: #49274b;
-    opacity: 0.8;
+    opacity: 0.9;
   }
 `;

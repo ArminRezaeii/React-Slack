@@ -10,7 +10,7 @@ import { useAuthState } from "react-firebase-hooks/auth";
 import styled from "styled-components";
 import { auth, db } from "../../firebase";
 import MenuIcon from "@mui/icons-material/Menu";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Sidebaroption from "../Sidebar/SidebarOption";
 import { collection } from "firebase/firestore";
 import { useCollection } from "react-firebase-hooks/firestore";
@@ -19,10 +19,8 @@ export default function Header() {
   const channelsCollectionRef = collection(db, "rooms");
   // @ts-ignore
   const [user] = useAuthState(auth);
-  const [channels, error, loading] = useCollection(channelsCollectionRef);
-  const toggleSidebar = () => {
-    setSidebarOpen(!sidebarOpen);
-  };
+  const [channels] = useCollection(channelsCollectionRef);
+  useEffect(() => {}, [sidebarOpen]);
   return (
     <>
       <HeaderContainer>
@@ -39,11 +37,16 @@ export default function Header() {
           <input type="text" placeholder="Search" />
         </HeaderSearch>
         <HeaderRight>
-          <MenuIcon onClick={toggleSidebar} className="menu" />
+          <MenuIcon
+            onClick={() => {
+              setSidebarOpen(!sidebarOpen);
+            }}
+            className="menu"
+          />
         </HeaderRight>
       </HeaderContainer>
       {sidebarOpen && (
-         <MenuContainer>
+        <MenuContainer>
           <MenuHeader>
             <SidebarInfo>
               <h1>{user?.displayName}</h1>
@@ -54,13 +57,11 @@ export default function Header() {
             </SidebarInfo>
             <Create />
           </MenuHeader>
-
           <Sidebaroption title="Add Channel" icon={Add} addChannelOption />
           {channels?.docs.map((doc) => (
             <Sidebaroption key={doc.id} id={doc.id} title={doc.data().name} />
           ))}
         </MenuContainer>
-    
       )}
     </>
   );
@@ -131,11 +132,16 @@ const HeaderRight = styled.div`
   display: flex;
   flex: 0.3;
   align-items: flex-start;
-
+  margin-left: 5px;
+  margin-right: 5px;
   .menu {
     display: none;
+    cursor: pointer;
   }
-
+  .menu:hover {
+    transition: 250ms all;
+    color: #49274b;
+  }
   @media screen and (max-width: 1024px) {
     .menu {
       display: flex;
@@ -153,11 +159,10 @@ const MenuContainer = styled.div`
   color: white;
   border-top: 1px solid #49274b;
   width: 100%;
-  padding: 10px;
-  height: 100%;
   display: flex;
+  padding-top: 50px;
+  padding-bottom: 10px;
   flex-direction: column;
-
   > hr {
     margin: 10px 0;
     border: 1px solid #49274b;

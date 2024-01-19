@@ -23,7 +23,7 @@ export default function Sidebar() {
   const channelsCollectionRef = collection(db, "rooms");
   // @ts-ignore
   const [user] = useAuthState(auth);
-  const [channels, error, loading] = useCollection(channelsCollectionRef);
+  const [channels] = useCollection(channelsCollectionRef);
   return (
     <SidebarContainer>
       <SidebarHeader>
@@ -58,6 +58,7 @@ export default function Sidebar() {
 const SidebarContainer = styled.div`
   background-color: var(--slack-color);
   color: white;
+  overflow-y: auto;
   flex: 0.3;
   @media screen and (max-width: 1024px) {
     & {
